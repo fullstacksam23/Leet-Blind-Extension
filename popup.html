@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Leet Blind</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 280px;
+      padding: 16px;
+      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f9f8f6;
+      color: #1a1a1a;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo svg {
+      width: 14px;
+      height: 14px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: #1a1a1a;
+    }
+
+    /* ── Section card ── */
+    .section {
+      background: #ffffff;
+      border: 0.5px solid #e4e2de;
+      border-radius: 11px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+    }
+
+    .section-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #a09e99;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 10px;
+    }
+
+    /* ── Mode toggle ── */
+    .mode-row {
+      display: flex;
+      gap: 7px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px 0;
+      border-radius: 8px;
+      border: 0.5px solid #e4e2de;
+      background: #f9f8f6;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b6963;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.14s, color 0.14s, border-color 0.14s;
+      user-select: none;
+      font-family: inherit;
+    }
+
+    .mode-btn.active {
+      background: #1a1a1a;
+      color: #ffffff;
+      border-color: #1a1a1a;
+    }
+
+    .mode-btn:not(.active):hover {
+      background: #f0ede8;
+      border-color: #ccc9c3;
+    }
+
+    /* ── Sliders ── */
+    .slider-row {
+      margin-bottom: 13px;
+    }
+
+    .slider-row:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .slider-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .diff-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #4a4844;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-easy   { background: #22c55e; }
+    .dot-medium { background: #f59e0b; }
+    .dot-hard   { background: #ef4444; }
+
+    .pct {
+      font-size: 12px;
+      font-weight: 500;
+      color: #1a1a1a;
+      min-width: 34px;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 3px;
+      border-radius: 2px;
+      background: #e4e2de;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.15);
+    }
+
+    #easySlider   { accent-color: #22c55e; }
+    #mediumSlider { accent-color: #f59e0b; }
+    #hardSlider   { accent-color: #ef4444; }
+
+    #easySlider::-webkit-slider-thumb   { background: #22c55e; }
+    #mediumSlider::-webkit-slider-thumb { background: #f59e0b; }
+    #hardSlider::-webkit-slider-thumb   { background: #ef4444; }
+
+    /* ── Total ── */
+    .total {
+      font-size: 11px;
+      color: #a09e99;
+      text-align: right;
+      margin-top: 11px;
+    }
+
+    .total span {
+      font-weight: 600;
+      color: #6b6963;
+    }
+
+    .total.over span {
+      color: #ef4444;
+    }
+
+    /* ── Save button ── */
+    .save-btn {
+      width: 100%;
+      padding: 11px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: -0.1px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .save-btn:hover  { opacity: 0.82; }
+    .save-btn:active { transform: scale(0.98); opacity: 0.7; }
+
+    .save-btn.saved {
+      background: #16a34a;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <img src="images/icon-32.png" alt="Leet Blind Logo"/>
+    <span class="title">Leet Blind</span>
+  </div>
+
+  <!-- Mode -->
+  <div class="section">
+    <div class="section-label">Mode</div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="btn-hide" data-value="hide">Hide difficulty</button>
+      <button class="mode-btn" id="btn-randomize" data-value="randomize">Randomize</button>
+    </div>
+  </div>
+
+  <!-- Weights -->
+  <div class="section">
+    <div class="section-label">Weights</div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <div class="diff-label"><span class="dot dot-easy"></span>Easy</div>
+        <span class="pct" id="easyValue">40%</span>
+      </div>
+      <input type="range" min="0" max="100" step="1" value="40" id="easySlider" />
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <div class="diff-label"><span class="dot dot-medium"></span>Medium</div>
+        <span class="pct" id="mediumValue">40%</span>
+      </div>
+      <input type="range" min="0" max="100" step="1" value="40" id="mediumSlider" />
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <div class="diff-label"><span class="dot dot-hard"></span>Hard</div>
+        <span class="pct" id="hardValue">20%</span>
+      </div>
+      <input type="range" min="0" max="100" step="1" value="20" id="hardSlider" />
+    </div>
+
+    <div class="total" id="totalLine">Total: <span id="totalText">100%</span></div>
+  </div>
+
+  <!-- Save -->
+  <button class="save-btn" id="saveBtn">Save settings</button>
+
+  <script src="popup.js"></script>
+
+</body>
+</html>
