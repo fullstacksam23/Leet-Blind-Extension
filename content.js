@@ -1,5 +1,4 @@
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
-const SIDEBAR_DIFFICULTIES = ["Easy", "Med.", "Hard"];
 
 // Pages where difficulty elements can appear
 const RELEVANT_PATHS = ["/problems/", "/problemset/"];
@@ -50,13 +49,15 @@ function restoreElement(el) {
     if (!original) return;
 
     clearDifficultyClasses(el);
-    el.textContent = original;
 
     const diffClass = original.toLowerCase();
 
     if (el.classList.contains("leet-blind-sidebar-target")) {
+        // Sidebar shows "Med." not "Medium"
+        el.textContent = diffClass === "medium" ? "Med." : original;
         el.classList.add(`text-sd-${diffClass}`);
     } else {
+        el.textContent = original;
         el.classList.add(
             `text-difficulty-${diffClass}`,
             `dark:text-difficulty-${diffClass}`
@@ -140,7 +141,8 @@ function randomizeDifficultySidebar(el) {
     clearDifficultyClasses(el);
     const randDiff  = weightedRandom(currentWeights);
     const diffClass = randDiff.toLowerCase();
-    el.textContent  = randDiff;
+    // Sidebar displays "Med." not "Medium"
+    el.textContent  = diffClass === "medium" ? "Med." : randDiff;
     el.classList.add(`text-sd-${diffClass}`);
 }
 
@@ -149,13 +151,18 @@ function applyToSidebarElements() {
         "p.text-sd-medium, p.text-sd-easy, p.text-sd-hard, p.leet-blind-sidebar-target"
     );
     elems.forEach(el => {
-        if (el.dataset.leetBlindMode === currentMode) return;
+        // In randomize mode, "Medium" text means Med. wasn't applied — force re-apply
+        const stale = currentMode === "randomize" && el.textContent.trim() === "Medium";
+        if (el.dataset.leetBlindMode === currentMode && !stale) return;
 
-        const rawText = el.textContent.trim();
-        if (SIDEBAR_DIFFICULTIES.includes(rawText)) {
-            el.dataset.leetBlindOriginal = rawText;
+        if (!el.dataset.leetBlindOriginal) {
+            const match = ["easy", "medium", "hard"].find(d =>
+                el.classList.contains(`text-sd-${d}`)
+            );
+            if (!match) return;
+            el.dataset.leetBlindOriginal =
+                match.charAt(0).toUpperCase() + match.slice(1);
         }
-        if (!el.dataset.leetBlindOriginal) return;
 
         el.classList.add("leet-blind-sidebar-target");
 
