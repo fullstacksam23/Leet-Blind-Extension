@@ -1,211 +1,110 @@
 const sliders = [
-  document.getElementById("easySlider"),
-  document.getElementById("mediumSlider"),
-  document.getElementById("hardSlider")
+    document.getElementById("easySlider"),
+    document.getElementById("mediumSlider"),
+    document.getElementById("hardSlider"),
 ];
 
 const values = [
-  document.getElementById("easyValue"),
-  document.getElementById("mediumValue"),
-  document.getElementById("hardValue")
+    document.getElementById("easyValue"),
+    document.getElementById("mediumValue"),
+    document.getElementById("hardValue"),
 ];
 
-const hideBtn =
-  document.getElementById("btn-hide");
-
-const randomizeBtn =
-  document.getElementById("btn-randomize");
+const extensionToggle = document.getElementById("extensionToggle");
+const hideBtn         = document.getElementById("btn-hide");
+const randomizeBtn    = document.getElementById("btn-randomize");
+const saveBtn         = document.getElementById("saveBtn");
 
 let currentMode = "hide";
 
+// ── Enabled/disabled UI state ────────────────────────────────────────────────
+function setEnabledUI(enabled) {
+    const controls = document.querySelectorAll(
+        ".mode-btn, .slider-row, #saveBtn"
+    );
+    controls.forEach(el => {
+        el.style.opacity        = enabled ? "" : "0.4";
+        el.style.pointerEvents  = enabled ? "" : "none";
+    });
+}
+
+// ── Mode ─────────────────────────────────────────────────────────────────────
 function setMode(mode) {
-
     currentMode = mode;
-
-    hideBtn.classList.toggle(
-        "active",
-        mode === "hide"
-    );
-
-    randomizeBtn.classList.toggle(
-        "active",
-        mode === "randomize"
-    );
-
+    hideBtn.classList.toggle("active", mode === "hide");
+    randomizeBtn.classList.toggle("active", mode === "randomize");
     updateWeightSection();
 }
 
-hideBtn.addEventListener("click", () => {
-    setMode("hide");
-});
-
-randomizeBtn.addEventListener("click", () => {
-    setMode("randomize");
-});
-
+// ── Slider totals ────────────────────────────────────────────────────────────
 function updateValues() {
-
-    const total =
-        sliders.reduce(
-            (sum, slider) =>
-                sum + Number(slider.value),
-            0
-        );
-
-    values[0].textContent =
-        `${sliders[0].value}%`;
-
-    values[1].textContent =
-        `${sliders[1].value}%`;
-
-    values[2].textContent =
-        `${sliders[2].value}%`;
-
-    const totalText =
-        document.getElementById("totalText");
-
-    totalText.textContent =
-        `${total}%`;
-
-    const totalLine =
-        document.getElementById("totalLine");
-
-    totalLine.classList.toggle(
-        "over",
-        total !== 100
-    );
+    const total = sliders.reduce((sum, s) => sum + Number(s.value), 0);
+    values.forEach((v, i) => { v.textContent = `${sliders[i].value}%`; });
+    document.getElementById("totalText").textContent = `${total}%`;
+    document.getElementById("totalLine").classList.toggle("over", total !== 100);
 }
 
 function updateWeightSection() {
-
-    const disabled =
-        currentMode === "hide";
-
-    sliders.forEach(slider => {
-        slider.disabled = disabled;
+    const disabled = currentMode === "hide";
+    sliders.forEach(s => { s.disabled = disabled; });
+    document.querySelectorAll(".slider-row").forEach(row => {
+        row.style.opacity = disabled ? "0.45" : "1";
     });
-
-    document
-        .querySelectorAll(".slider-row")
-        .forEach(container => {
-
-            container.style.opacity =
-                disabled ? "0.45" : "1";
-        });
 }
 
+// ── Slider clamping ──────────────────────────────────────────────────────────
 sliders.forEach((slider, index) => {
-
-    slider.addEventListener(
-        "input",
-        () => {
-
-            let total =
-                sliders.reduce(
-                    (sum, s) =>
-                        sum + Number(s.value),
-                    0
-                );
-
-            if (total > 100) {
-
-                let excess =
-                    total - 100;
-
-                sliders.forEach(
-                    (s, i) => {
-
-                        if (
-                            i !== index &&
-                            excess > 0
-                        ) {
-
-                            let current =
-                                Number(s.value);
-
-                            let reduction =
-                                Math.min(
-                                    current,
-                                    excess
-                                );
-
-                            s.value =
-                                current - reduction;
-
-                            excess -= reduction;
-                        }
-                    }
-                );
-            }
-
-            updateValues();
+    slider.addEventListener("input", () => {
+        let total = sliders.reduce((sum, s) => sum + Number(s.value), 0);
+        if (total > 100) {
+            let excess = total - 100;
+            sliders.forEach((s, i) => {
+                if (i !== index && excess > 0) {
+                    const reduction = Math.min(Number(s.value), excess);
+                    s.value = Number(s.value) - reduction;
+                    excess -= reduction;
+                }
+            });
         }
-    );
+        updateValues();
+    });
 });
 
-chrome.storage.local.get(
-    ["mode", "weights"],
-    (data) => {
+// ── Load saved settings ──────────────────────────────────────────────────────
+chrome.storage.local.get(["mode", "weights", "enabled"], (data) => {
+    const enabled = data.enabled ?? true;
+    extensionToggle.checked = enabled;
+    setEnabledUI(enabled);
 
-        const mode =
-            data.mode || "hide";
+    setMode(data.mode || "hide");
 
-        const weights =
-            data.weights ||
-            [40, 40, 20];
+    const weights = data.weights || [40, 40, 20];
+    sliders.forEach((s, i) => { s.value = weights[i]; });
+    updateValues();
+});
 
-        setMode(mode);
+// ── Toggle ───────────────────────────────────────────────────────────────────
+extensionToggle.addEventListener("change", () => {
+    const enabled = extensionToggle.checked;
+    setEnabledUI(enabled);
+    chrome.storage.local.set({ enabled });
+});
 
-        sliders[0].value =
-            weights[0];
+// ── Mode buttons ─────────────────────────────────────────────────────────────
+hideBtn.addEventListener("click",       () => setMode("hide"));
+randomizeBtn.addEventListener("click",  () => setMode("randomize"));
 
-        sliders[1].value =
-            weights[1];
+// ── Save ─────────────────────────────────────────────────────────────────────
+saveBtn.addEventListener("click", () => {
+    chrome.storage.local.set({
+        mode:    currentMode,
+        weights: sliders.map(s => Number(s.value)),
+    });
 
-        sliders[2].value =
-            weights[2];
-
-        updateValues();
-    }
-);
-
-document
-    .getElementById("saveBtn")
-    .addEventListener(
-        "click",
-        () => {
-
-            const weights =
-                sliders.map(
-                    s => Number(s.value)
-                );
-
-            chrome.storage.local.set({
-                mode: currentMode,
-                weights
-            });
-
-            const saveBtn =
-                document.getElementById(
-                    "saveBtn"
-                );
-
-            saveBtn.textContent =
-                "Saved!";
-
-            saveBtn.classList.add(
-                "saved"
-            );
-
-            setTimeout(() => {
-
-                saveBtn.textContent =
-                    "Save settings";
-
-                saveBtn.classList.remove(
-                    "saved"
-                );
-
-            }, 1200);
-        }
-    );
+    saveBtn.textContent = "Saved!";
+    saveBtn.classList.add("saved");
+    setTimeout(() => {
+        saveBtn.textContent = "Save settings";
+        saveBtn.classList.remove("saved");
+    }, 1200);
+});
