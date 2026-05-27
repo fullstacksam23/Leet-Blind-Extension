@@ -12,7 +12,9 @@
   </p>
 </div>
 
-<br />
+<div align="center">
+  <img src="./images/demo.gif" alt="Leet Blind demo" width="1000" />
+</div>
 
 ## Overview
 
@@ -28,12 +30,6 @@ Instead of seeing `Easy`, `Medium`, or `Hard` before you even start thinking, yo
 It is designed as a simple mental-performance tool for interview prep, deliberate practice, and stress reduction.
 
 > If you solve differently after seeing the `Hard` tag, this extension is for you.
-
-## Demo
-
-<div align="center">
-  <img src="./images/demo.gif" alt="Leet Blind demo" width="1000" />
-</div>
 
 ## Why This Exists
 
