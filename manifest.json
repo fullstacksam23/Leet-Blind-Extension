@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Leet Blind",
-  "description": "Hides/Randomizes the difficulty of leetcode problems",
-  "version": "1.0",
+  "description": "Hide or randomize LeetCode difficulty labels for a cleaner, stress-free solving experience.",
+  "version": "0.0.1",
   "icons": {
     "16": "images/icon-16.png",
     "32": "images/icon-32.png",

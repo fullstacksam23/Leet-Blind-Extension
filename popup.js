@@ -18,13 +18,20 @@ const saveBtn         = document.getElementById("saveBtn");
 let currentMode = "hide";
 
 // ── Enabled/disabled UI state ────────────────────────────────────────────────
-function setEnabledUI(enabled) {
-    const controls = document.querySelectorAll(
-        ".mode-btn, .slider-row, #saveBtn"
-    );
-    controls.forEach(el => {
-        el.style.opacity        = enabled ? "" : "0.4";
-        el.style.pointerEvents  = enabled ? "" : "none";
+function updateUI(enabled) {
+    const isEnabled = enabled ?? extensionToggle.checked;
+
+    // Mode buttons and save — fully disabled when extension is off
+    [hideBtn, randomizeBtn, saveBtn].forEach(el => {
+        el.style.opacity       = isEnabled ? "" : "0.4";
+        el.style.pointerEvents = isEnabled ? "" : "none";
+    });
+
+    // Weight sliders — disabled when extension is off OR mode is hide
+    const weightsDisabled = !isEnabled || currentMode === "hide";
+    sliders.forEach(s => { s.disabled = weightsDisabled; });
+    document.querySelectorAll(".slider-row").forEach(row => {
+        row.style.opacity = weightsDisabled ? "0.45" : "1";
     });
 }
 
@@ -33,7 +40,7 @@ function setMode(mode) {
     currentMode = mode;
     hideBtn.classList.toggle("active", mode === "hide");
     randomizeBtn.classList.toggle("active", mode === "randomize");
-    updateWeightSection();
+    updateUI();
 }
 
 // ── Slider totals ────────────────────────────────────────────────────────────
@@ -42,14 +49,6 @@ function updateValues() {
     values.forEach((v, i) => { v.textContent = `${sliders[i].value}%`; });
     document.getElementById("totalText").textContent = `${total}%`;
     document.getElementById("totalLine").classList.toggle("over", total !== 100);
-}
-
-function updateWeightSection() {
-    const disabled = currentMode === "hide";
-    sliders.forEach(s => { s.disabled = disabled; });
-    document.querySelectorAll(".slider-row").forEach(row => {
-        row.style.opacity = disabled ? "0.45" : "1";
-    });
 }
 
 // ── Slider clamping ──────────────────────────────────────────────────────────
@@ -74,19 +73,19 @@ sliders.forEach((slider, index) => {
 chrome.storage.local.get(["mode", "weights", "enabled"], (data) => {
     const enabled = data.enabled ?? true;
     extensionToggle.checked = enabled;
-    setEnabledUI(enabled);
 
-    setMode(data.mode || "hide");
+    setMode(data.mode || "hide"); // sets currentMode before updateUI
 
     const weights = data.weights || [40, 40, 20];
     sliders.forEach((s, i) => { s.value = weights[i]; });
     updateValues();
+    updateUI(enabled);
 });
 
 // ── Toggle ───────────────────────────────────────────────────────────────────
 extensionToggle.addEventListener("change", () => {
     const enabled = extensionToggle.checked;
-    setEnabledUI(enabled);
+    updateUI(enabled);
     chrome.storage.local.set({ enabled });
 });
 

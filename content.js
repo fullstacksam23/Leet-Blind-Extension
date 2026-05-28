@@ -151,20 +151,20 @@ function applyToSidebarElements() {
         "p.text-sd-medium, p.text-sd-easy, p.text-sd-hard, p.leet-blind-sidebar-target"
     );
     elems.forEach(el => {
-        // In randomize mode, "Medium" text means Med. wasn't applied — force re-apply
-        const stale = currentMode === "randomize" && el.textContent.trim() === "Medium";
-        if (el.dataset.leetBlindMode === currentMode && !stale) return;
-
-        if (!el.dataset.leetBlindOriginal) {
+        // Derive and save original ONLY from elements not yet tagged by us.
+        // Once tagged, the text-sd-* class may be our own randomized value — never re-derive.
+        if (!el.classList.contains("leet-blind-sidebar-target")) {
             const match = ["easy", "medium", "hard"].find(d =>
                 el.classList.contains(`text-sd-${d}`)
             );
             if (!match) return;
             el.dataset.leetBlindOriginal =
                 match.charAt(0).toUpperCase() + match.slice(1);
+            el.classList.add("leet-blind-sidebar-target");
         }
 
-        el.classList.add("leet-blind-sidebar-target");
+        if (!el.dataset.leetBlindOriginal) return;
+        if (el.dataset.leetBlindMode === currentMode) return;
 
         if (currentMode === "hide") {
             hideDifficulty(el);
@@ -209,9 +209,15 @@ function tryApply() {
     const diffElem = getDifficultyElement();
     if (!diffElem) return;
 
-    const rawText = diffElem.textContent.trim();
-    if (DIFFICULTIES.includes(rawText)) {
-        diffElem.dataset.leetBlindOriginal = rawText;
+    // Only derive original from untagged elements — once tagged, the class
+    // may reflect our own change, not the real difficulty.
+    if (!diffElem.classList.contains("leet-blind-target")) {
+        const match = ["easy", "medium", "hard"].find(d =>
+            diffElem.classList.contains(`text-difficulty-${d}`)
+        );
+        if (!match) return; // class not set yet — React hasn't rendered difficulty
+        diffElem.dataset.leetBlindOriginal =
+            match.charAt(0).toUpperCase() + match.slice(1);
     }
 
     if (!diffElem.dataset.leetBlindOriginal) return;
@@ -229,11 +235,20 @@ function handleURLChange() {
     if (url === lastSeenURL) return;
     lastSeenURL = url;
 
-    const old = document.querySelector(".leet-blind-target");
-    if (old) old.classList.remove(".leet-blind-target");
+    // Clean up all tagged elements so stale originals don't persist across navigation
+    document.querySelectorAll(".leet-blind-target").forEach(el => {
+        el.classList.remove("leet-blind-target");
+        delete el.dataset.leetBlindOriginal;
+        delete el.dataset.leetBlindMode;
+    });
+    document.querySelectorAll(".leet-blind-sidebar-target").forEach(el => {
+        el.classList.remove("leet-blind-sidebar-target");
+        delete el.dataset.leetBlindOriginal;
+        delete el.dataset.leetBlindMode;
+    });
 
     if (!isRelevantPage()) {
-        revealDifficulty(); // clean up if navigating away
+        revealDifficulty();
         return;
     }
 
