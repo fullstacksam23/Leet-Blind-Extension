@@ -5,7 +5,9 @@
   <p>A Chrome extension that hides or randomizes LeetCode difficulty labels to reduce stress, bias, and premature self-judgment.</p>
   <p>
     <img src="https://img.shields.io/badge/version-1.0-111111" alt="Version 1.0" />
-    <img src="https://img.shields.io/badge/Chrome%20Extension-MV3-3C873A?logo=googlechrome&logoColor=white" alt="Chrome Extension MV3" />
+      <a href="https://chromewebstore.google.com/detail/leet-blind/pcadlbbelfgopbdnllmoglhbcfdnmkej">
+    <img src="https://img.shields.io/badge/Install-Chrome%20Web%20Store-4285F4?logo=googlechrome&logoColor=white" alt="Install from Chrome Web Store" />
+  </a>
     <img src="https://img.shields.io/badge/LeetCode-Focus%20Mode-F89F1B" alt="LeetCode Focus Mode" />
     <img src="https://img.shields.io/badge/Privacy-Local%20Only-0F766E" alt="Privacy Local Only" />
     <img src="https://img.shields.io/badge/Stack-JavaScript%20%7C%20HTML%20%7C%20CSS-2563EB" alt="JavaScript HTML CSS" />
@@ -86,6 +88,10 @@ If you want to improve the project, good areas to help with include:
 If you open a pull request, keeping changes small and focused will make review easier.
 
 <br />
+
+## Get Leet Blind
+
+Install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/leet-blind/pcadlbbelfgopbdnllmoglhbcfdnmkej).
 
 <div align="center">
   <strong>Leet Blind</strong>
